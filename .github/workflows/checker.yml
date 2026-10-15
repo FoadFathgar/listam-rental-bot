@@ -1,0 +1,34 @@
+name: List.am Rental Monitor
+
+on:
+  schedule:
+  - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Restore Cache for Seen Listings
+        uses: actions/cache@v3
+        with:
+          path: seen_ids.json
+          key: seen-ids-${{ github.run_id }}
+          restore-keys: |
+            seen-ids-
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Execute List.am Checker
+        env:
+          LIST_AM_URL: ${{ secrets.LIST_AM_URL }}
+        run: python list_am_bot.py
